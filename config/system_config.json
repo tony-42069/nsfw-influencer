@@ -1,0 +1,16 @@
+{
+    "database": {
+        "uri": "mongodb://localhost:27017",
+        "database": "ai_influencer",
+        "collections": {
+            "conversations": "conversations",
+            "content_history": "content_history",
+            "user_interactions": "user_interactions",
+            "metrics": "metrics"
+        }
+    },
+    "api": {
+        "host": "localhost",
+        "port": 8000
+    }
+}
