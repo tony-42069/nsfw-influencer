@@ -1,0 +1,7 @@
+langchain
+pymongo
+fastapi
+uvicorn
+pytest
+python-dotenv
+apscheduler
