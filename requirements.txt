@@ -5,3 +5,6 @@ uvicorn
 pytest
 python-dotenv
 apscheduler
+aiohttp  # Used in fansly_client.py
+python-multipart  # Will be needed for file uploads in FastAPI
+pytest-asyncio  # Required for testing our async functions
