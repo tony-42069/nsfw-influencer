@@ -1,4 +1,4 @@
-# 🇺🇸 Conservative AI Influencer Engine 🤠
+# AI Influencer Engine 🤠
 
 ![Python](https://img.shields.io/badge/python-3.9+-blue.svg)
 ![FastAPI](https://img.shields.io/badge/FastAPI-0.68.0+-green.svg)
