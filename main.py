@@ -1,9 +1,23 @@
 # main.py
-from fastapi import FastAPI
-from src.api.webhook_handlers import router as webhook_router
-from src.utils.config import load_config
-import uvicorn
+from fastapi import FastAPI, HTTPException, Request, Body
+from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import JSONResponse
+from pydantic import BaseModel
+from typing import Dict, Optional, List
+from datetime import datetime
 import logging
+import uvicorn
+import json
+import os
+from dotenv import load_dotenv
+
+from src.core.personality import PersonalityEngine
+from src.core.content_manager import ContentManager
+from src.core.engagement import EngagementSystem
+from src.utils.config import load_config
+
+# Load environment variables
+load_dotenv()
 
 # Configure logging
 logging.basicConfig(
@@ -20,20 +34,128 @@ logger = logging.getLogger(__name__)
 app = FastAPI(
     title="NSFW Influencer Engine",
     description="AI Personality and Content Management System",
-    version="1.0.0"
+    version="0.1.0"
 )
 
-# Include routers
-app.include_router(webhook_router, prefix="/api/v1")
+# Add CORS middleware
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
+# Initialize core systems
+personality_engine = PersonalityEngine()
+content_manager = ContentManager()
+engagement_system = EngagementSystem()
+
+# Define API models
+class ContentRequest(BaseModel):
+    content_type: str
+    params: Optional[Dict] = None
+    
+class InteractionRequest(BaseModel):
+    type: str
+    user_id: Optional[str] = "anonymous"
+    message: str
+    user_type: Optional[str] = "free_user"
+    
+class PersonalityUpdateRequest(BaseModel):
+    base_traits: Optional[Dict] = None
+    conversation_style: Optional[Dict] = None
+
+# API Routes
+@app.get("/")
+async def root():
+    return {"message": "NSFW Influencer Engine API", "version": "0.1.0"}
+
+@app.get("/health")
+async def health_check():
+    """Health check endpoint"""
+    return {"status": "healthy", "timestamp": datetime.now().isoformat()}
+
+@app.post("/api/personality/generate")
+async def generate_response(prompt: str = Body(..., embed=True)):
+    """Generate personality-driven response"""
+    try:
+        response = await personality_engine.generate_response(prompt)
+        return {"response": response}
+    except Exception as e:
+        logger.error(f"Error generating response: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Response generation failed: {str(e)}")
+
+@app.post("/api/personality/update")
+async def update_personality(update_request: PersonalityUpdateRequest):
+    """Update personality traits"""
+    try:
+        await personality_engine.update_personality(update_request.dict(exclude_none=True))
+        return {"status": "success", "message": "Personality updated successfully"}
+    except Exception as e:
+        logger.error(f"Error updating personality: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Personality update failed: {str(e)}")
+
+@app.get("/api/personality/stats")
+async def get_personality_stats():
+    """Get personality statistics"""
+    try:
+        stats = await personality_engine.get_personality_stats()
+        return stats
+    except Exception as e:
+        logger.error(f"Error getting personality stats: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Failed to get personality stats: {str(e)}")
+
+@app.post("/api/content/create")
+async def create_content(content_request: ContentRequest):
+    """Generate new content"""
+    try:
+        content = await content_manager.generate_content(
+            content_request.content_type, 
+            content_request.params
+        )
+        return {"content": content}
+    except Exception as e:
+        logger.error(f"Error creating content: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Content creation failed: {str(e)}")
+
+@app.post("/api/content/schedule")
+async def schedule_content(content: Dict = Body(...), publish_time: Optional[str] = None):
+    """Schedule content for publishing"""
+    try:
+        scheduled = await content_manager.schedule_content(content, publish_time)
+        return {"scheduled_content": scheduled}
+    except Exception as e:
+        logger.error(f"Error scheduling content: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Content scheduling failed: {str(e)}")
+
+@app.post("/api/engagement/interact")
+async def handle_interaction(interaction: InteractionRequest):
+    """Process user interaction"""
+    try:
+        response = await engagement_system.process_interaction(interaction.dict())
+        return {"status": "success", "response": response}
+    except Exception as e:
+        logger.error(f"Error processing interaction: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Interaction processing failed: {str(e)}")
+
+@app.get("/api/engagement/stats")
+async def get_engagement_stats():
+    """Get engagement statistics"""
+    try:
+        stats = await engagement_system.get_engagement_stats()
+        return stats
+    except Exception as e:
+        logger.error(f"Error getting engagement stats: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Failed to get engagement stats: {str(e)}")
 
 if __name__ == "__main__":
-    config = load_config()
-    uvicorn.run(
-        "main:app", 
-        host=config.get("host", "0.0.0.0"), 
-        port=config.get("port", 8000), 
-        reload=True
-    )
+    config = load_config().get("system", {})
+    host = config.get("api", {}).get("host", "0.0.0.0")
+    port = int(config.get("api", {}).get("port", 8000))
+    
+    logger.info(f"Starting NSFW Influencer Engine API on {host}:{port}")
+    uvicorn.run("main:app", host=host, port=port, reload=True)
 
 # src/api/webhook_handlers.py
 from fastapi import APIRouter, HTTPException, Depends, Request
