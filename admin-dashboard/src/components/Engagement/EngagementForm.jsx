@@ -4,7 +4,8 @@ const EngagementForm = ({ onSubmit, isLoading }) => {
   const [formData, setFormData] = useState({
     interactionType: 'comment',
     userType: 'follower',
-    message: ''
+    message: '',
+    platform: 'x'
   });
 
   const handleChange = (e) => {
@@ -30,6 +31,22 @@ const EngagementForm = ({ onSubmit, isLoading }) => {
           <div className="row">
             <div className="col-md-6">
               <div className="mb-3">
+                <label htmlFor="platform" className="form-label">Platform</label>
+                <select 
+                  className="form-select" 
+                  id="platform" 
+                  name="platform"
+                  value={formData.platform}
+                  onChange={handleChange}
+                >
+                  <option value="x">X (Twitter)</option>
+                  <option value="fansly">Fansly</option>
+                </select>
+              </div>
+            </div>
+            
+            <div className="col-md-6">
+              <div className="mb-3">
                 <label htmlFor="interactionType" className="form-label">Interaction Type</label>
                 <select 
                   className="form-select" 
@@ -44,24 +61,22 @@ const EngagementForm = ({ onSubmit, isLoading }) => {
                 </select>
               </div>
             </div>
-            
-            <div className="col-md-6">
-              <div className="mb-3">
-                <label htmlFor="userType" className="form-label">User Type</label>
-                <select 
-                  className="form-select" 
-                  id="userType" 
-                  name="userType"
-                  value={formData.userType}
-                  onChange={handleChange}
-                >
-                  <option value="visitor">Visitor (New User)</option>
-                  <option value="follower">Follower</option>
-                  <option value="subscriber">Subscriber</option>
-                  <option value="vip">VIP</option>
-                </select>
-              </div>
-            </div>
+          </div>
+          
+          <div className="mb-3">
+            <label htmlFor="userType" className="form-label">User Type</label>
+            <select 
+              className="form-select" 
+              id="userType" 
+              name="userType"
+              value={formData.userType}
+              onChange={handleChange}
+            >
+              <option value="visitor">Visitor (New User)</option>
+              <option value="follower">Follower</option>
+              <option value="subscriber">Subscriber</option>
+              <option value="vip">VIP</option>
+            </select>
           </div>
           
           <div className="mb-3">
