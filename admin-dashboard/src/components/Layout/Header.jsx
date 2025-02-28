@@ -1,6 +1,6 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { FaLock, FaFire, FaBolt, FaFlag } from 'react-icons/fa';
+import { FaLock, FaFire, FaBolt, FaFlag, FaStar } from 'react-icons/fa';
 
 const Header = () => {
   return (
@@ -30,6 +30,11 @@ const Header = () => {
       </div>
       <div className="navbar-nav">
         <div className="nav-item text-nowrap d-flex align-items-center">
+          <div className="me-3 d-none d-md-flex align-items-center">
+            <FaStar className="text-warning me-1" />
+            <FaStar className="text-warning me-1" />
+            <FaStar className="text-warning" />
+          </div>
           <span className="badge bg-success me-2 d-none d-md-block">API Running</span>
           <span id="api-status" className="badge bg-secondary me-3 d-none d-md-block">Checking...</span>
           <Link to="/settings" className="btn btn-sm me-3" style={{ backgroundColor: 'rgba(0,0,0,0.3)', color: 'white' }}>
