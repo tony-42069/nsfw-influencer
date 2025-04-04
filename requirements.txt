@@ -10,5 +10,5 @@ python-multipart  # Will be needed for file uploads in FastAPI
 pytest-asyncio  # Required for testing our async functions
 jinja2  # For templating in FastAPI
 starlette  # For web components
-openai==1.12.0  # For OpenAI integration
-pydantic==2.5.2  # For data validation
+openai  # For OpenAI integration
+pydantic # For data validation
