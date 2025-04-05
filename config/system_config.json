@@ -1,11 +1,11 @@
 {
     "database": {
         "uri": "mongodb://localhost:27017",
-        "database": "ai_influencer",
+        "database": "lydia_db",
         "collections": {
             "conversations": "conversations",
-            "content_history": "content_history",
-            "user_interactions": "user_interactions",
+            "content_history": "content",
+            "user_interactions": "interactions",
             "metrics": "metrics"
         }
     },

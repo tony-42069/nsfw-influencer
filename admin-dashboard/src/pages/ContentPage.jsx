@@ -132,27 +132,40 @@ const ContentPage = () => {
       setError('Error connecting to the server: ' + (error.response?.data?.message || error.message));
     } finally {
       setIsSaving(false);
-    }
-  };
-  
-  const saveContent = () => {
+    } // End of finally
+  } // End of handleSchedule
+
+  const saveContent = async () => { // Start of saveContent
     if (!generatedContent) return;
-    
-    // Add to local storage for now (this would connect to a CMS in production)
-    const savedContent = {
-      id: Date.now(),
+
+    setIsSaving(true); // Use isSaving state
+    setError(null);
+    setFeedback('');
+
+    const contentToSave = {
       text: generatedContent,
       type: contentType,
-      topic,
-      tone,
-      saved_at: new Date().toISOString()
+      topic: topic,
+      tone: tone,
+      // Let backend handle ID and timestamp
     };
-    
-    const existingSaved = JSON.parse(localStorage.getItem('savedContent') || '[]');
-    localStorage.setItem('savedContent', JSON.stringify([...existingSaved, savedContent]));
-    
-    setFeedback('Content saved to library!');
-    setTimeout(() => setFeedback(''), 3000);
+
+    try {
+      // Assume endpoint is /api/content/save
+      const response = await axios.post(`${API_BASE_URL}/api/content/save`, contentToSave);
+
+      if (response.data.success) {
+        setFeedback('Content saved to library successfully!');
+        // Optionally clear preview or give other feedback
+      } else {
+        setError(response.data.message || 'Failed to save content to library');
+      }
+    } catch (error) {
+      console.error('Error saving content:', error);
+      setError('Error connecting to the server: ' + (error.response?.data?.message || error.message));
+    } finally {
+      setIsSaving(false);
+    }
   };
 
   const formatDateTime = (isoString) => {
@@ -361,10 +374,24 @@ const ContentPage = () => {
                     <button className="btn btn-secondary" onClick={copyToClipboard}>
                       <i className="fas fa-copy me-1"></i> Copy
                     </button>
-                    <button className="btn btn-primary" onClick={saveContent}>
-                      <i className="fas fa-save me-1"></i> Save to Library
+                    {/* Update Save button to use isSaving state */}
+                    <button
+                      className="btn btn-primary"
+                      onClick={saveContent}
+                      disabled={isSaving} // Disable button while saving
+                    >
+                      {isSaving ? (
+                        <>
+                          <span className="spinner-border spinner-border-sm me-1" role="status" aria-hidden="true"></span>
+                          Saving...
+                        </>
+                      ) : (
+                        <>
+                          <i className="fas fa-save me-1"></i> Save to Library
+                        </>
+                      )}
                     </button>
-                    <button 
+                    <button
                       className="btn btn-success"
                       onClick={() => setShowPreview(true)}
                       disabled={showPreview}
@@ -420,4 +447,4 @@ const ContentPage = () => {
   );
 };
 
-export default ContentPage; 
+export default ContentPage;

@@ -32,11 +32,13 @@ if openai_key:
 from src.core.engagement import EngagementSystem
 from src.core.personality import PersonalityEngine
 from src.core.content_manager import ContentManager
+from src.utils.database import DatabaseManager # Import DatabaseManager
 
 # Initialize components
 engagement_system = EngagementSystem()
 personality_engine = PersonalityEngine()
 content_manager = ContentManager()
+db_manager = DatabaseManager() # Initialize DatabaseManager
 
 # Initialize FastAPI app
 app = FastAPI(
@@ -183,6 +185,37 @@ async def schedule_content(schedule_data: Dict[str, Any] = Body(...)):
         return JSONResponse(
             status_code=500,
             content={"success": False, "message": f"Error scheduling content: {str(e)}"}
+        )
+
+@app.post("/api/content/save")
+async def save_content_to_library(content_data: Dict[str, Any] = Body(...)):
+    """Save generated content to the database library"""
+    try:
+        logger.info(f"Saving content to library: {content_data}")
+        
+        # Add a timestamp
+        content_data_with_timestamp = {
+            **content_data,
+            "saved_at": datetime.now().isoformat(),
+            "status": "saved" # Add a status
+        }
+        
+        # Use the DatabaseManager instance to store content
+        inserted_id = db_manager.store_content(content_data_with_timestamp)
+        
+        logger.info(f"Content saved with ID: {inserted_id}")
+        return {
+            "success": True,
+            "message": "Content saved successfully",
+            "content_id": inserted_id
+        }
+    except Exception as e:
+        logger.error(f"Error saving content to library: {str(e)}")
+        import traceback
+        logger.error(f"Traceback: {traceback.format_exc()}")
+        return JSONResponse(
+            status_code=500,
+            content={"success": False, "message": f"Error saving content: {str(e)}"}
         )
 
 # Personality API endpoints
